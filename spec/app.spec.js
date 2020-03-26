@@ -168,15 +168,19 @@ after(() => connection.destroy());
                             .then(({body:{comments}})=>{
                               expect(comments).to.eql([])
                             })
-                        });
-                        
+                        })
                         it('Status 200: accepts queries and sorts by them', () => {
                             return request(app)
-                            .get('/api/articles/5/comments')
+                            .get('/api/articles/5/comments?sort_by=votes')
                             .expect(200)
-                            .then()
+                            .then(({body: {comments}}) => {
+                                expect(comments).to.be.sortedBy('votes');
+                                expect(comments[0].author).to.eql('butter_bridge')
+                            })
 
                         })
+                        
+                 
                         
 
                     })

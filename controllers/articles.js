@@ -41,9 +41,9 @@ exports.postComment = (req, res, next) => {
 
 exports.getAllCommentsByArticleId = (req, res, next) => {
      const {article_id} = req.params;
-     const {query} = req.query;
+     const {sort_by} = req.query;
 
-    fetchAllAssociatedComments(query, article_id)
+    fetchAllAssociatedComments(article_id, sort_by)
     .then(comments => {
         res.status(200).send({comments})
     }) 

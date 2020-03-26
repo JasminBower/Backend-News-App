@@ -50,10 +50,11 @@ exports.insertComment = (article_id, comment) => {
     })
 };
 
-exports.fetchAllAssociatedComments = (query, article_id) => {
+exports.fetchAllAssociatedComments = (article_id, ...sort_by) => {
     return knex('comments')
     .where({article_id})
     .returning('*')
+    .orderBy(sort_by || 'created_at', 'dsc')
     .then(comments => {
         comments.forEach(comment => {
             delete comment.article_id;
