@@ -233,17 +233,24 @@ after(() => connection.destroy());
                             .get('/api/articles/555889876141/comments')
                             .expect(404)
                             .then(({body: {msg}}) => {
-                                expect(msg).to.equal('article not found')
+                                expect(msg).to.equal('Invalid input')
                             })
                         });
-                        it('Status 400: Bar REquest', () => {
+                        it('Status 400: Bad Request', () => {
                             return request(app)
                             .get('/api/articles/cheeseisnice/comments')
                             .expect(400)
                             .then(({body:{msg}}) => {
                                 expect(msg).to.equal('Bad Request')
                             })
-                        })
+                        });
+                        it('Staus 400: Invalid sortBy', () => {
+                            return request(app)
+                            .get('/api/articles/1/comments/sort_by=cheese')
+                            .expect(400)
+                            .then(({body:{msg}}) => {
+                                expect(msg).to.eql('Bad Request')
+                            })
                         
                  
                      });
@@ -333,10 +340,10 @@ after(() => connection.destroy());
                     });
                     it('Status 404: not found, when passed a comment_id that does not exist', () => {
                         return request(app)
-                        .delete('/api/comments/1')
+                        .delete('/api/comments/9876')
                         .expect(404)
                         .then(({body:{msg}}) => {
-                        expect(msg).to.eql('Path not found')
+                        expect(msg).to.eql('Comment not found')
                         })
                     })
                 })
@@ -350,3 +357,4 @@ after(() => connection.destroy());
 
 
     })
+})

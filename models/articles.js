@@ -56,15 +56,15 @@ exports.insertComment = (article_id, comment) => {
 };
 
 exports.fetchAllAssociatedComments = (article_id, ...{sort_by = 'created_at', order = 'dsc'}) => {
-    console.log(article_id)
-    //if(typeof {article_id} !== "number") return Promise.reject({status: 400, msg: 'Bad Request'});
+    const queriesArr = ['created_at', 'votes', 'comment_count', 'topic', 'author', 'title']
+    if(!queriesArr.includes(sort_by)) return (Promise.reject({status: 400, msg: 'Bad Request'}));
    //write a check if article_id exists func
     return knex('comments')
-    .where({article_id})
+    .where('comments.article_id', article_id)
     .returning('*')
     .orderBy(sort_by, order)
     .then(comments => {
-        console.log(comments)
+        
         comments.forEach(comment => {
             delete comment.article_id;
             return comment;

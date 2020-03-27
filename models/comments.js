@@ -14,12 +14,11 @@ exports.updatedVotes = (comment_id, inc_votes) => {
 
 exports.deleteCommentById = comment_id => {
     return knex('comments')
-    .select('*')
     .where({comment_id})
     .del()
-    .then(resp => {
-        if(!resp){
-            return Promise.reject();
+    .then(noOfDelComments => {
+        if(noOfDelComments === 0){
+            return Promise.reject({status: 404, msg: 'Comment not found'});
         }
     })
 }
