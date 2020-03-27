@@ -1,4 +1,7 @@
-const {fetchSingleArticle, modifiedArticle, insertComment, fetchAllAssociatedComments, fetchAllArticles, updateVotes} = require('../models/articles');
+const {fetchSingleArticle, modifiedArticle, insertComment, fetchAllAssociatedComments, fetchAllArticles, checkIdExists} = require('../models/articles');
+
+
+
 
 exports.getArticle = (req, res, next) => {
   const {article_id} = req.params;
@@ -55,7 +58,7 @@ exports.getAllCommentsByArticleId = (req, res, next) => {
 
 exports.getAllArticles = (req, res, next) =>{
     const query = req.query;
-    console.log(query)
+    
 
     fetchAllArticles(query)
     .then(articles => {

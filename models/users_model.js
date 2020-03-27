@@ -7,7 +7,7 @@ exports.fetchSingleUser = (username) => {
     .where('users.username', username)
     .then(([user]) => {
         if(!user){
-            return Promise.reject()
+            return Promise.reject({status: 404, msg: 'User Does Not Exist'})
         }
         return user
     })

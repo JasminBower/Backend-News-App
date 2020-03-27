@@ -49,17 +49,17 @@ after(() => connection.destroy());
                     return request(app)
                     .get('/api/users/lurker')
                     .expect(200)
-                    .then(res => {
-                        expect(res.body.user).to.be.an('Object');
-                        expect(res.body.user).to.contain.keys('username', 'name', 'avatar_url');
+                    .then(({body : {user}}) => {
+                        expect(user).to.be.an('Object');
+                        expect(user).to.contain.keys('username', 'name', 'avatar_url');
                     })
                 });
                 it('Status 404: user not found', () => {
                     return request(app)
                     .get('/api/users/lurkerrrrrrr')
                     .expect(404)
-                    .then(res => {
-                        expect(res.body).to.eql({msg: 'Path not found'});
+                    .then(({body: {msg}}) => {
+                        expect(msg).to.eql('User Does Not Exist');
                     })
 
                 })
@@ -67,14 +67,14 @@ after(() => connection.destroy());
         });
 
         describe('/articles', () => {
-            describe('GET', () => {
-                it('Status 200: responds with an article object', () => {
+            describe('GET /:article_id', () => {
+                it('Status 200: responds with an article object and has comment count', () => {
                     return request(app)
                     .get('/api/articles/1')
                     .expect(200)
-                    .then(res => {
-                        expect(res.body.article).to.be.an('Object')
-                        expect(res.body.article).to.contain.keys(
+                    .then(({body: {article}}) => {
+                        expect(article).to.be.an('Object')
+                        expect(article).to.contain.keys(
                             "author",
                             "title",
                             "body",
@@ -84,17 +84,26 @@ after(() => connection.destroy());
                             "votes",
                             "comment_count"
                             );
-                            expect(res.body.article.comment_count).to.eql('13');
+                            expect(article.comment_count).to.eql('13');
                     })
                 });
                 it('Status 404: responds when article id doesnt exist', () => {
                     return request(app)
                     .get('/api/articles/567876')
                     .expect(404)
-                    .then(res => {
-                        expect(res.body).to.eql({msg: 'Path not found'});
+                    .then(({body: {msg}})=> {
+                        expect(msg).to.eql('Article Id Not Found');
+                    })
+                });
+                it('Status 422: bad input', () => {
+                    return request(app)
+                    .get('/api/articles/ILikeCheeseInMyBath')
+                    .expect(422)
+                    .then(({body: {msg}}) => {
+                        expect(msg).to.eql('Invaild Input')
                     })
                 })
+
             });
             describe('PATCH', () => {
                 it('Status 200: responds with the updated article including new votes', () => {
@@ -113,10 +122,30 @@ after(() => connection.destroy());
                     .patch('/api/articles/9564')
                     .send({inc_votes: 42})
                     .expect(404)
-                    .then(res => {
-                        expect(res.body).to.eql({msg: 'Path not found'})
+                    .then(({body: {msg}}) => {
+                        expect(msg).to.equal('Article Id Invalid')
                     })
-                })
+                });
+                it('Status 400: When invalid body sent', () => {
+                    return request(app)
+                    .patch('/api/articles/1')
+                    .send({carrots: 7})
+                    .expect(400)
+                    .then(({body: {msg}}) => {
+                        expect(msg).to.equal('Invalid Body Sent')
+                    })
+
+                });
+                it('Status 400: When invalid body sent that is wrong data type', () => {
+                    return request(app)
+                    .patch('/api/articles/1')
+                    .send({inc_votes: 'carrots'})
+                    .expect(400)
+                    .then(({body: {msg}}) => {
+                        expect(msg).to.equal('Invalid Body Sent')
+                    })
+
+                });
             });
             describe('POST', () => {
                 describe('/:article_id/comments', () => {
@@ -132,17 +161,27 @@ after(() => connection.destroy());
                             expect(comment.body).to.not.eql('Cheddar is superior');
                         })
                     })
-                    it('STATUS 404: article not found', () => {
+                    it('STATUS 404: article id not found', () => {
                         return request(app)
                         .post('/api/articles/789542/comments')
                         .send({username: 'lurker',
-                        body:'I like brie, its my fave cheese'})
+                               body:'I like brie, its my fave cheese'})
                         .expect(404)
-                        .then(res => {
+                        .then(({body: {msg}}) => {
                             
-                            expect(res.body).to.eql({msg: 'article not found'})
+                            expect(msg).to.eql('article not found')
                         })
                     });
+                    it('Status 400: Bad request', () => {
+                        return request(app)
+                        .post('/api/articles/1/comments')
+                        .send({cheese: 'Bries',
+                               carrots: 500})
+                        .expect(400)
+                        .then(({body: {msg}}) => {
+                           expect(msg).to.equal('Invalid Body Sent')
+                        })
+                    })
                     describe('GET /:article_id/comments', () => {
                         it('Staus 200: responds with an array of all comments by article_id', () => {
                            return request(app)
@@ -169,7 +208,7 @@ after(() => connection.destroy());
                               expect(comments).to.eql([])
                             })
                         })
-                        it('Status 200: accepts queries and sorts by them', () => {
+                        it('Status 200: accepts queries and sorts by them, defaulting to desc order', () => {
                             return request(app)
                             .get('/api/articles/5/comments?sort_by=votes')
                             .expect(200)
@@ -188,6 +227,22 @@ after(() => connection.destroy());
                                 expect(comments[1].votes).to.eql(16)
                             });
 
+                        });
+                        it('Status 404: article does not exist', () => {
+                            return request(app)
+                            .get('/api/articles/555889876141/comments')
+                            .expect(404)
+                            .then(({body: {msg}}) => {
+                                expect(msg).to.equal('article not found')
+                            })
+                        });
+                        it('Status 400: Bar REquest', () => {
+                            return request(app)
+                            .get('/api/articles/cheeseisnice/comments')
+                            .expect(400)
+                            .then(({body:{msg}}) => {
+                                expect(msg).to.equal('Bad Request')
+                            })
                         })
                         
                  
