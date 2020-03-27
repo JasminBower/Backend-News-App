@@ -176,18 +176,122 @@ after(() => connection.destroy());
                             .then(({body: {comments}}) => {
                                 expect(comments).to.be.sortedBy('votes');
                                 expect(comments[0].author).to.eql('butter_bridge')
-                            })
+                            });
+
+                        });
+                        it('Status 200: accepts quieries and order and sorts by them', () => {
+                            return request(app)
+                            .get('/api/articles/5/comments?sort_by=votes&&order=asc')
+                            .expect(200)
+                            .then(({body: {comments}}) => {
+                                expect(comments).to.be.sortedBy('votes');
+                                expect(comments[1].votes).to.eql(16)
+                            });
 
                         })
                         
                  
-                        
+                     });
+
+                     
+
+                })
+            });
+            describe('allArticles /api/articles', () => {
+                describe('GET', () => {
+                    it('Status 200: responds with an array of article objects', () => {
+                        return request(app)
+                        .get('/api/articles')
+                        .expect(200)
+                        .then(({body: {articles}} )=> {
+                            expect(articles[0]).to.have.keys(
+                                'author',
+                                'title',
+                                'created_at',
+                                'topic',
+                                'article_id',
+                                'votes',
+                                'comment_count'
+                            );
+                            expect(articles).to.have.lengthOf(12)
+                        })
+                    });
+                    it('Status 200: default sort_by created_at descending', () => {
+                        return request(app)
+                        .get('/api/articles')
+                        .expect(200)
+                        .then(({body: {articles}}) => {
+                            expect(articles).to.be.descendingBy('created_at')
+                        })
+
+                    })
+                    it('Status 200: Accepts queries and correctly sorts by them', () => {
+                        return request(app)
+                        .get('/api/articles?sort_by=author')
+                        .expect(200)
+                        .then(({body: {articles}}) => {
+                            expect(articles).to.be.descendingBy('author')
+                        })
+
+                    });
+                    it('Status 404: Path not found', () => {
+                        return request(app)
+                        .get('/api/articlezzzzz')
+                        .expect(404)
+                        .then(({body:{msg}}) => {
+                            expect(msg).to.eql('Path not found')
+                        })
+                    })
+                    it('Status 400: Bad request, column not found', () => {
+                        return request(app)
+                        .get('/api/articles?sort_by=bobismydogandheiscool')
+                        .expect(400)
+                        .then(({body:{msg}}) => {
+                            expect(msg).to.eql('Bad Request')
+                        })
+                    })
+                })
+                
+            });
+
+            describe('/api/comments/:comment_id', () => {
+                describe('PATCH', () => {
+                    it('Status 200: responds with updated updated comment', () => {
+                    return request(app)
+                    .patch('/api/comments/1')
+                    .send({inc_votes: 54})
+                    .expect(200)
+                    .then(({body : {comment}}) => {
+                        expect(comment.votes).to.eql(70);
+                        expect(comment.votes).to.not.eql(100);
 
                     })
 
+  
+                    })
                 })
-            })
-              
+                describe('DELETE', () => {
+                    it('Status 204: No content deleted comment by id', () => {
+                        return request(app)
+                        .delete('/api/comments/1')
+                        .expect(204);
+                    });
+                    it('Status 404: not found, when passed a comment_id that does not exist', () => {
+                        return request(app)
+                        .delete('/api/comments/1')
+                        .expect(404)
+                        .then(({body:{msg}}) => {
+                        expect(msg).to.eql('Path not found')
+                        })
+                    })
+                })
 
-        })
+            })
+
+
+
+        });
+        
+
+
     })

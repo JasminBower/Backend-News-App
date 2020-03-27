@@ -14,6 +14,18 @@ app.use('/*', (req, res, next) => {
     res.status(404).send({msg: 'Path not found'})
 })
 
+app.use((err, req, res, next) => {
+   
+    if(err.code === '23503'){
+        res.status(404).send({msg: 'article not found'})
+    }
+    if(err.code === '42703'){
+        res.status(400).send({msg: 'Bad Request'})
+    }
+    console.log(err)
+
+    res.status(500).send({msg: 'SERVER ERROR'})
+})
 
 
 module.exports = app;

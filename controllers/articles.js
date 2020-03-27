@@ -1,4 +1,4 @@
-const {fetchSingleArticle, modifiedArticle, insertComment, fetchAllAssociatedComments} = require('../models/articles');
+const {fetchSingleArticle, modifiedArticle, insertComment, fetchAllAssociatedComments, fetchAllArticles, updateVotes} = require('../models/articles');
 
 exports.getArticle = (req, res, next) => {
   const {article_id} = req.params;
@@ -32,9 +32,7 @@ exports.postComment = (req, res, next) => {
         res.status(201).send({comment})
     })
     .catch(err => {
-        if(err.code === '23503'){
-            res.status(404).send({msg: 'article not found'})
-        }
+       
         next(err)
     })
 };
@@ -42,8 +40,9 @@ exports.postComment = (req, res, next) => {
 exports.getAllCommentsByArticleId = (req, res, next) => {
      const {article_id} = req.params;
      const {sort_by} = req.query;
+     const {order} = req.query;
 
-    fetchAllAssociatedComments(article_id, sort_by)
+    fetchAllAssociatedComments(article_id, sort_by, order)
     .then(comments => {
         res.status(200).send({comments})
     }) 
@@ -53,3 +52,18 @@ exports.getAllCommentsByArticleId = (req, res, next) => {
     })
 
 };
+
+exports.getAllArticles = (req, res, next) =>{
+    const query = req.query;
+    console.log(query)
+
+    fetchAllArticles(query)
+    .then(articles => {
+        res.status(200).send({articles})
+    })
+    .catch(err => {
+        next(err)
+    })
+};
+
+
