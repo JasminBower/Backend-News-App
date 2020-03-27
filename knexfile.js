@@ -1,3 +1,4 @@
+const { DB_URL } = process.env
 const ENV = process.env.NODE_ENV || 'development';
 
 const baseConfig = {
@@ -14,17 +15,19 @@ const customConfig = {
   development: {
     connection: {
       database: 'nc_news'
-      // user,
-      // password
+     
     }
   },
   test: {
     connection: {
       database: 'nc_news_test'
-      // user,
-      // password
+      
     }
+  },
+  production: {
+    connection: `${DB_URL}?ssl=true`
   }
+
 };
 
 module.exports = { ...customConfig[ENV], ...baseConfig };
