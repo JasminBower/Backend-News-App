@@ -56,9 +56,13 @@ exports.insertComment = (article_id, comment) => {
 };
 
 exports.fetchAllAssociatedComments = (article_id, ...{sort_by = 'created_at', order = 'dsc'}) => {
+    const numberId = Number(article_id)
+    console.log(numberId)
     const queriesArr = ['created_at', 'votes', 'comment_count', 'topic', 'author', 'title']
-    if(!queriesArr.includes(sort_by)) return (Promise.reject({status: 400, msg: 'Bad Request'}));
-   //write a check if article_id exists func
+    if(!queriesArr.includes(sort_by) || typeof numberId !== 'number'){
+       return Promise.reject({status: 400, msg: 'Bad Request'})
+    };
+   //write func to check if article id exists
     return knex('comments')
     .where('comments.article_id', article_id)
     .returning('*')
