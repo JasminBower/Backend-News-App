@@ -228,7 +228,7 @@ describe("/api", () => {
 						});
 				});
 				describe("GET /:article_id/comments", () => {
-					it("Staus 200: responds with an array of all comments by article_id", () => {
+					it("Status 200: responds with an array of all comments by article_id", () => {
 						return request(app)
 							.get("/api/articles/5/comments")
 							.expect(200)
