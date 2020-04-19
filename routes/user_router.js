@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const usersRouter = express.Router();
-const {getUser} = require('../controllers/users');
-
+const { getUser } = require("../controllers/users");
 
 usersRouter
-.route('/:username')
-.get(getUser)
+	.route("/:username")
+	.get(getUser)
+	.all((req, res, next) => {
+		res.status(405).send({ msg: "Invalid method!" });
+	});
 
-
-
-module.exports = {usersRouter}
+module.exports = { usersRouter };

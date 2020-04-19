@@ -12,9 +12,9 @@ after(() => connection.destroy());
 
 describe("/api", () => {
 	describe("GET /api", () => {
-		it("Satus 200: Returns all endpoints", () => {
+		it("Status 200: Returns all endpoints", () => {
 			return request(app)
-				.get("/api")
+				.get("/api/")
 				.expect(200)
 				.then((res) => {
 					expect(res.body).to.be.an("Object");
@@ -41,6 +41,18 @@ describe("/api", () => {
 						expect(res.body).to.eql({ msg: "Path not found" });
 					});
 			});
+			it("Status:405 invalid method", () => {
+				const invalidMethods = ["patch", "put", "delete"];
+				const methodPromises = invalidMethods.map((method) => {
+					return request(app)
+						[method]("/api/topics")
+						.expect(405)
+						.then(({ body: { msg } }) => {
+							expect(msg).to.equal("Invalid method!");
+						});
+				});
+				return Promise.all(methodPromises);
+			});
 		});
 	});
 	describe("/users/:username", () => {
@@ -61,6 +73,18 @@ describe("/api", () => {
 					.then(({ body: { msg } }) => {
 						expect(msg).to.eql("User Does Not Exist");
 					});
+			});
+			it("Status:405 invalid method", () => {
+				const invalidMethods = ["patch", "put", "delete"];
+				const methodPromises = invalidMethods.map((method) => {
+					return request(app)
+						[method]("/api/users/:username")
+						.expect(405)
+						.then(({ body: { msg } }) => {
+							expect(msg).to.equal("Invalid method!");
+						});
+				});
+				return Promise.all(methodPromises);
 			});
 		});
 	});
@@ -102,6 +126,18 @@ describe("/api", () => {
 						expect(msg).to.eql("Bad Request");
 					});
 			});
+			it("Status:405 invalid method", () => {
+				const invalidMethods = ["put", "delete"];
+				const methodPromises = invalidMethods.map((method) => {
+					return request(app)
+						[method]("/api/articles/3")
+						.expect(405)
+						.then(({ body: { msg } }) => {
+							expect(msg).to.equal("Invalid method!");
+						});
+				});
+				return Promise.all(methodPromises);
+			});
 		});
 		describe("PATCH", () => {
 			it("Status 200: responds with the updated article including new votes", () => {
@@ -140,6 +176,18 @@ describe("/api", () => {
 					.then(({ body: { msg } }) => {
 						expect(msg).to.equal("Invalid Body Sent");
 					});
+			});
+			it("Status:405 invalid method", () => {
+				const invalidMethods = ["put", "delete"];
+				const methodPromises = invalidMethods.map((method) => {
+					return request(app)
+						[method]("/api/articles/1")
+						.expect(405)
+						.then(({ body: { msg } }) => {
+							expect(msg).to.equal("Invalid method!");
+						});
+				});
+				return Promise.all(methodPromises);
 			});
 		});
 		describe("POST", () => {
@@ -213,7 +261,7 @@ describe("/api", () => {
 								expect(comments[0].author).to.eql("icellusedkars");
 							});
 					});
-					it("Status 200: accepts quieries and order and sorts by them", () => {
+					it("Status 200: accepts queries and order and sorts by them", () => {
 						return request(app)
 							.get("/api/articles/5/comments?sort_by=votes&&order=asc")
 							.expect(200)
@@ -238,7 +286,7 @@ describe("/api", () => {
 								expect(msg).to.equal("Bad Request");
 							});
 					});
-					it("Staus 400: Invalid sortBy,missing column", () => {
+					it("Status 400: Invalid sortBy,missing column", () => {
 						return request(app)
 							.get("/api/articles/1/comments?sort_by=cheese")
 							.expect(400)
@@ -247,8 +295,20 @@ describe("/api", () => {
 							});
 					});
 				});
+				it("Status:405 invalid method", () => {
+					const invalidMethods = ["put", "patch", "delete"];
+					const methodPromises = invalidMethods.map((method) => {
+						return request(app)
+							[method]("/api/articles/1/comments")
+							.expect(405)
+							.then(({ body: { msg } }) => {
+								expect(msg).to.equal("Invalid method!");
+							});
+					});
+					return Promise.all(methodPromises);
+				});
 			});
-			describe("allArticles /api/articles", () => {
+			describe("All Articles /api/articles", () => {
 				describe("GET", () => {
 					it("Status 200: responds with an array of article objects", () => {
 						return request(app)
@@ -300,6 +360,18 @@ describe("/api", () => {
 							});
 					});
 				});
+				it("Status:405 invalid method", () => {
+					const invalidMethods = ["put", "patch", "delete"];
+					const methodPromises = invalidMethods.map((method) => {
+						return request(app)
+							[method]("/api/articles")
+							.expect(405)
+							.then(({ body: { msg } }) => {
+								expect(msg).to.equal("Invalid method!");
+							});
+					});
+					return Promise.all(methodPromises);
+				});
 			});
 
 			describe("/api/comments/:comment_id", () => {
@@ -314,6 +386,18 @@ describe("/api", () => {
 								expect(comment.votes).to.not.eql(100);
 							});
 					});
+					it("Status:405 invalid method", () => {
+						const invalidMethods = ["put", "get"];
+						const methodPromises = invalidMethods.map((method) => {
+							return request(app)
+								[method]("/api/comments/2")
+								.expect(405)
+								.then(({ body: { msg } }) => {
+									expect(msg).to.equal("Invalid method!");
+								});
+						});
+						return Promise.all(methodPromises);
+					});
 				});
 				describe("DELETE", () => {
 					it("Status 204: No content deleted comment by id", () => {
@@ -326,6 +410,18 @@ describe("/api", () => {
 							.then(({ body: { msg } }) => {
 								expect(msg).to.eql("Comment not found");
 							});
+					});
+					it("Status:405 invalid method", () => {
+						const invalidMethods = ["put", "get"];
+						const methodPromises = invalidMethods.map((method) => {
+							return request(app)
+								[method]("/api/comments/23")
+								.expect(405)
+								.then(({ body: { msg } }) => {
+									expect(msg).to.equal("Invalid method!");
+								});
+						});
+						return Promise.all(methodPromises);
 					});
 				});
 			});
